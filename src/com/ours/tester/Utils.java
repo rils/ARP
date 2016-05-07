@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 public class Utils {
 
-	public static final float DELAY_LIMIT_TOBE_COUNTED = 0.3f;
+	public static final float DELAY_LIMIT_TOBE_COUNTED = 0.1f;
 
 	public static void FileWrite(String file_location, String data,
 			boolean appendable) {
@@ -53,19 +53,26 @@ public class Utils {
 		try {
 			String line = br.readLine();
 			int l = 1;
+			String eventCmd = "";
+			String eventCmdNext = "";
+			String adb_cmd;
+			String device = null;
+			String deviceNext = null;
+			String events;
+			String evt = "";
 			while (line != null) {
 
 				if (line.startsWith("[")) {
 
-					String device = line.split(":")[0].split("]")[1].trim();
-					String events = line.split(":")[1];
-					String eventCmd = "";
+					deviceNext = line.split(":")[0].split("]")[1].trim();
+					events = line.split(":")[1];
 					// System.out.println(line);
 					tNext = getUnixKernelTimeStamp(line, "/dev/input/");
 					// System.out.println(tNext);
+
 					for (int i = 1; i < 4; i++) {
 						String hexNum = events.split(" ")[i].trim();
-						String evt;
+
 						try {
 							int n = Integer.parseInt(hexNum, 16);
 							evt = String.valueOf(n);
@@ -73,35 +80,46 @@ public class Utils {
 							long n1 = Long.valueOf(hexNum, 16).longValue();
 							evt = String.valueOf(n1);
 						}
-						eventCmd = eventCmd + " " + evt;
+						eventCmdNext = eventCmdNext + " " + evt;
 					}
+
 					if (l != 1) {
 						delay = Float.parseFloat(tNext) - Float.parseFloat(t);
 						// System.out.println("delay " + delay);
+
+						if ((delay > DELAY_LIMIT_TOBE_COUNTED)
+								|| !deviceNext.contentEquals(device)) {
+							adb_cmd = ADB.mySendEventAdbLocation + " "
+									+ device.trim() + " " + eventCmd;
+							eventCmd = "";
+							eventCmdNext = eventCmdNext
+									.replaceAll(
+											"^.*?\\w+(\\W+\\d*\\W+\\d*\\W+\\d*)$",
+											"$1");
+							System.out.println(eventCmdNext);
+							// System.out.println(adb_cmd);
+							sb.append(adb_cmd);
+							sb.append(System.lineSeparator());
+							if (delay > DELAY_LIMIT_TOBE_COUNTED) {
+								System.out.println("delay between " + t + "---"
+										+ tNext + "-->" + delay);
+								sb.append("sleep " + delay + ";");
+								sb.append(System.lineSeparator());
+							}
+						}
 					}
 					t = tNext;
-					String adb_cmd = "sendevent " + device.trim() + " "
-							+ eventCmd;
-					// System.out.println(adb_cmd);
-					sb.append(adb_cmd);
-
-					if ((l != 1) && (delay > DELAY_LIMIT_TOBE_COUNTED)) {
-						sb.append(System.lineSeparator());
-						sb.append("sleep " + delay + ";");
-						sb.append(System.lineSeparator());
-					}
-					sb.append(System.lineSeparator());
+					device = deviceNext;
+					eventCmd = eventCmdNext;
 					l++;
 				}
-
 				line = br.readLine();
-
 			}
-
+			sb.append(ADB.mySendEventAdbLocation + " " + deviceNext.trim()
+					+ " " + eventCmdNext);
 		} catch (IOException e) {
 			System.out.println("exception happened - here's what I know: ");
 			e.printStackTrace();
-
 		} finally {
 			br.close();
 		}

@@ -14,9 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -30,9 +27,6 @@ import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
 
 import com.android.ddmlib.IDevice;
-import java.awt.Color;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 public class MainWindow extends JFrame implements ActionListener {
 
@@ -95,7 +89,12 @@ public class MainWindow extends JFrame implements ActionListener {
 							"Error", JOptionPane.ERROR_MESSAGE);
 			System.exit(0);
 		}
-
+		try {
+			mADB.initmySendEvent();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		setTitle("Record N Play");
 		setSize(329, 187);
 		setLocationRelativeTo(null);

@@ -1,8 +1,10 @@
 package com.ours.tester;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -27,8 +29,10 @@ public class ADB {
 	public static FileOutputReceiver fReciever;
 	public static boolean isLogCancelled = false;
 	private static String myTesterEventScript_file = "/data/local/tmp/myTesterEventScript.mes";
-
-	private Utils mUtils;
+	static final String mySendEventAdbLocation = "/data/local/tmp/mysendevent";
+	public static final String mySendEventLocation = Paths.get("")
+			.toAbsolutePath().toString()
+			+ File.separator + "mysendevent";
 
 	public boolean initialize() {
 		boolean success = true;
@@ -290,11 +294,34 @@ public class ADB {
 		shell(cmd);
 	}
 
+	public void initmySendEvent() throws IOException {
+
+		InputStream is = this.getClass().getClassLoader()
+				.getResourceAsStream("mysendevent");
+		FileOutputStream fos = null;
+		try {
+			fos = new FileOutputStream("mysendevent");
+			byte[] buf = new byte[2048];
+			int r = is.read(buf);
+			while (r != -1) {
+				fos.write(buf, 0, r);
+				r = is.read(buf);
+			}
+		} finally {
+			if (fos != null) {
+				fos.close();
+			}
+		}
+		adbPush(mySendEventLocation, mySendEventAdbLocation);
+		shell("chmod 777 " + mySendEventAdbLocation);
+	}
+
 	public void convertPushPlayEventScript(String mel_file_location) {
 		String mes_script_file;
 		System.out.println("convertpushPlay" + mel_file_location);
 
 		try {
+
 			mes_script_file = new Utils()
 					.convertgetEventToSendEvent(mel_file_location);
 			adbPush(mes_script_file, myTesterEventScript_file);
