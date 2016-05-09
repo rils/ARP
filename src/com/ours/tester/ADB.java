@@ -20,7 +20,7 @@ import com.android.ddmlib.TimeoutException;
 
 public class ADB {
 	public static final String LOG_TAG = "mytester";
-	public static String file_location;
+	public String file_location;
 	public static boolean isStartNewLogFile = true;
 
 	private AndroidDebugBridge mAndroidDebugBridge;
@@ -40,7 +40,6 @@ public class ADB {
 		String adbLocation;
 
 		adbLocation = System.getenv("ANDROID_HOME");
-		// Here, adbLocation may be android sdk directory
 		if (adbLocation != null) {
 			adbLocation += File.separator + "platform-tools";
 		}
@@ -64,7 +63,6 @@ public class ADB {
 
 			int count = 0;
 			while (!mAndroidDebugBridge.hasInitialDeviceList()) {
-
 				try {
 					Thread.sleep(100);
 					count++;
@@ -75,13 +73,11 @@ public class ADB {
 					break;
 				}
 			}
-
 		}
 
 		if (!success) {
 			terminate();
 		}
-
 		return success;
 	}
 
@@ -119,13 +115,11 @@ public class ADB {
 	public String getDeviceName() {
 
 		return mDevice.getName();
-
 	}
 
 	public IDevice getMyDevice() {
 
 		return mDevice;
-
 	}
 
 	private class CollectingOutputReceiver extends MultiLineReceiver {
@@ -179,7 +173,7 @@ public class ADB {
 		public void getOutputToFile() {
 
 			if (ADB.isStartNewLogFile) {
-				ADB.file_location = Paths.get("").toAbsolutePath().toString()
+				file_location = Paths.get("").toAbsolutePath().toString()
 						+ File.separator
 						+ new SimpleDateFormat("yyyyMMddhhmmss")
 								.format(new Date()) + "_events.mel";

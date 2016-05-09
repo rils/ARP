@@ -5,8 +5,12 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -15,15 +19,21 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
+import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.filechooser.FileFilter;
 
 import com.android.ddmlib.IDevice;
@@ -31,6 +41,7 @@ import com.android.ddmlib.IDevice;
 public class MainWindow extends JFrame implements ActionListener {
 
 	/**
+	 * @author Mohammed Rilwan April 2016
 	 * 
 	 */
 	private static final long serialVersionUID = -770355362650071463L;
@@ -62,43 +73,50 @@ public class MainWindow extends JFrame implements ActionListener {
 	private final JLabel lbl_action = new JLabel("");
 	private final JTextArea text_Curfile = new JTextArea("");
 	private final JSpinner spinner = new JSpinner();
+	private JPopupMenu mPopupMenu;
 
 	/**
-	 * Create the frame.
+	 * Create the the main frame.
 	 */
 	public MainWindow() {
 
-		super("Record and Play");
+		super("Android Record and Play");
+		setIconImage(Toolkit.getDefaultToolkit().getImage(
+				MainWindow.class.getResource("/images/play.png")));
 
 		mUtils = new Utils();
 
+		// for help menu
+		initializeMenu();
+
+		// initialize adb
 		if (!mADB.initialize()) {
-			JOptionPane
-					.showMessageDialog(
-							this,
-							"Could not find adb, please install Android SDK and set adb path",
-							"Error", JOptionPane.ERROR_MESSAGE);
+			showDialogMessage(
+					"Could not find adb, please install Android SDK and set adb path",
+					"error", true);
 			System.exit(0);
 		}
 		devices = mADB.adbDevices();
 		if (devices == null) {
-			JOptionPane
-					.showMessageDialog(
-							this,
-							"No Devices Conencted, Please Run again by conencting atleast once android device.",
-							"Error", JOptionPane.ERROR_MESSAGE);
-			System.exit(0);
+			showDialogMessage(
+					"No Devices Conencted, Please Run again by conencting atleast once android device.",
+					"error", true);
 		}
+		// copy mysendevent to /data/local/tmp/
 		try {
 			mADB.initmySendEvent();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			showDialogMessage(
+					"No write permission on jar file location, Copy jar file to some other location and run again",
+					"error", true);
 		}
-		setTitle("Record N Play");
+
+		setTitle("Android Record N Play");
 		setSize(329, 187);
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
+
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 				0 };
@@ -211,11 +229,73 @@ public class MainWindow extends JFrame implements ActionListener {
 		btnOpen.addActionListener(this);
 		comboBox.addActionListener(this);
 
+		getContentPane().addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if (SwingUtilities.isRightMouseButton(e)) {
+					mPopupMenu.show(e.getComponent(), e.getX(), e.getY());
+				}
+			}
+		});
 		// pack();
 		setResizable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
 
+	}
+
+	private void initializeMenu() {
+		mPopupMenu = new JPopupMenu();
+
+		initializeAbout();
+
+		/*
+		 * Add later
+		 */
+		mPopupMenu.addPopupMenuListener(new PopupMenuListener() {
+			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+			}
+
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+			}
+
+			public void popupMenuCanceled(PopupMenuEvent e) {
+			}
+		});
+	}
+
+	private void showDialogMessage(String message, String type, boolean exit) {
+
+		int errorType = JOptionPane.ERROR_MESSAGE;
+		String title = "Error";
+		/*
+		 * Add more here later if required
+		 */
+		if (type.contentEquals("error")) {
+			errorType = JOptionPane.ERROR_MESSAGE;
+			title = "Error";
+		}
+
+		JOptionPane.showMessageDialog(this, message, title, errorType);
+		if (exit)
+			System.exit(0);
+	}
+
+	private void initializeAbout() {
+		JMenuItem menuItemAbout = new JMenuItem("About ARP");
+		menuItemAbout.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				about();
+			}
+
+		});
+		mPopupMenu.add(menuItemAbout);
+	}
+
+	private void about() {
+		AboutDialog dialog = new AboutDialog(this, true);
+		dialog.setLocationRelativeTo(this);
+		dialog.setVisible(true);
 	}
 
 	public void actionPerformed(ActionEvent event) {
@@ -237,7 +317,6 @@ public class MainWindow extends JFrame implements ActionListener {
 				saveFile();
 			else if (button == btnPlay)
 				play();
-
 		}
 		if (source instanceof JComboBox) {
 			JComboBox cb = (JComboBox) event.getSource();
@@ -246,8 +325,8 @@ public class MainWindow extends JFrame implements ActionListener {
 				mADB.mDevice = mADB.mDevices[cb.getSelectedIndex() - 1];
 			else
 				mADB.mDevice = mADB.mDevices[cb.getSelectedIndex()];
-
 		}
+
 	}
 
 	private void record() {
@@ -271,6 +350,9 @@ public class MainWindow extends JFrame implements ActionListener {
 		RecordThread.start();
 	}
 
+	/**
+	 * This happens at stop.
+	 */
 	private void stop() {
 
 		isPause = false;
@@ -291,6 +373,9 @@ public class MainWindow extends JFrame implements ActionListener {
 		text_Curfile.setText(eventFileToPlay);
 	}
 
+	/**
+	 * at pause.
+	 */
 	private void pauseRecording() {
 
 		btnRecord.setText("Resume");
@@ -323,6 +408,9 @@ public class MainWindow extends JFrame implements ActionListener {
 		record();
 	}
 
+	/**
+	 * at play.
+	 */
 	private void play() {
 
 		PlayThread = new Thread(new Runnable() {
@@ -402,6 +490,8 @@ public class MainWindow extends JFrame implements ActionListener {
 		int userChoice = fileChooser.showSaveDialog(this);
 		if (userChoice == JFileChooser.APPROVE_OPTION) {
 			eventFilePath = fileChooser.getSelectedFile().getAbsolutePath();
+			if (!eventFilePath.endsWith("mel"))
+				eventFilePath = eventFilePath + ".mel";
 			Path dst = FileSystems.getDefault().getPath(eventFilePath);
 			Path src = FileSystems.getDefault().getPath(mADB.file_location);
 
@@ -415,6 +505,7 @@ public class MainWindow extends JFrame implements ActionListener {
 			System.out.println("saved to " + eventFilePath);
 			lbl_action.setText("File Saved As:");
 			text_Curfile.setText(eventFilePath);
+			eventFileToPlay = eventFilePath;
 			mADB.file_location = eventFilePath;
 		}
 	}
@@ -450,6 +541,7 @@ public class MainWindow extends JFrame implements ActionListener {
 		fileChooser.setAcceptAllFileFilterUsed(true);
 
 		int userChoice = fileChooser.showOpenDialog(this);
+
 		if (userChoice == JFileChooser.APPROVE_OPTION) {
 			eventFilePath = fileChooser.getSelectedFile().getAbsolutePath();
 			lastOpenPath = fileChooser.getSelectedFile().getParent();
@@ -457,38 +549,13 @@ public class MainWindow extends JFrame implements ActionListener {
 			eventFileToPlay = eventFilePath;
 		}
 		lbl_action.setText("Current File:");
-		text_Curfile.setText(fileChooser.getSelectedFile().getName());
+		text_Curfile.setText(eventFilePath);
 		btnPlay.setEnabled(true);
 		spinner.setEnabled(true);
 	}
 
-	public static void interrupt() throws IOException {
-
-		System.out.println("Interrupted");
-		int i = 0;
-		try {
-			Thread.sleep(1000);
-			System.out.println(i++);
-		} catch (InterruptedException ex) {
-			ex.printStackTrace();
-			System.out.println("NOW interupted");
-			if (isResumed) {
-
-				System.out
-						.println("NOW interupted because of resume, start getevent process here with append");
-			} else if (isPause) {
-				System.out
-						.println("NOW interupted because of pause, suspend getevent process here.");
-
-			} else {
-				System.out.println("!!!!");
-
-			}
-		}
-	}
-
 	/**
-	 * Launch the application.
+	 * Launch the application here.
 	 */
 	public static void main(String[] args) {
 
