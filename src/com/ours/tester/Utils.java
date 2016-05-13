@@ -4,12 +4,17 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Utils {
 
 	public static final float DELAY_LIMIT_TOBE_COUNTED = 0.1f;
+	public static final List<String> nameList = Arrays.asList("sec_touchkey",
+			"sec_touchscreen", "gpio", "qpnp_pon");
 
 	public static void FileWrite(String file_location, String data,
 			boolean appendable) {
@@ -25,11 +30,12 @@ public class Utils {
 		}
 	}
 
-	public String getUnixKernelTimeStamp(String dmesg_string, String pattern) {
+	public String getUnixKernelTimeStamp(String kernel_log,
+			String pattern_tofind_in_log) {
 
 		Pattern pTime = Pattern.compile("\\[\\s*(\\d*.\\d\\d\\d\\d\\d\\d)\\].*"
-				+ pattern);
-		Matcher mTime = pTime.matcher(dmesg_string);
+				+ pattern_tofind_in_log);
+		Matcher mTime = pTime.matcher(kernel_log);
 
 		String time = null;
 		if (mTime.find()) {
@@ -60,11 +66,42 @@ public class Utils {
 			String deviceNext = null;
 			String events;
 			String evt = "";
+			String devName = null;
+			String devFile = null;
+			boolean searchForName = false;
+			Pattern p;
+			ArrayList<String> deviceList = new ArrayList<String>();
 			while (line != null) {
 
+				if (line.contains("add device")) {
+					devFile = line.split(":")[1].trim();
+					searchForName = true;
+				}
+				if (searchForName) {
+					if (line.startsWith("name:")) {
+						devName = line.split(":")[1].split("\"")[1].trim();
+						searchForName = false;
+						for (String deviceName : nameList) {
+							p = Pattern.compile(deviceName + ".*");
+							if (p.matcher(devName).matches()) {
+								deviceList.add(devFile);
+								System.out.println("Matching device-"
+										+ deviceName);
+							}
+						}
+					}
+				}
 				if (line.startsWith("[")) {
 
 					deviceNext = line.split(":")[0].split("]")[1].trim();
+
+					if (!deviceList.contains(deviceNext)) {
+						System.out.println("Non matching device,Skip-"
+								+ deviceNext);
+						line = br.readLine();
+						continue;
+					}
+
 					events = line.split(":")[1];
 					// System.out.println(line);
 					tNext = getUnixKernelTimeStamp(line, "/dev/input/");
@@ -89,14 +126,14 @@ public class Utils {
 
 						if ((delay > DELAY_LIMIT_TOBE_COUNTED)
 								|| !deviceNext.contentEquals(device)) {
-							adb_cmd = ADB.mySendEventAdbLocation + " "
+							adb_cmd = "/data/local/tmp/mysendevent "
 									+ device.trim() + " " + eventCmd;
 							eventCmd = "";
 							eventCmdNext = eventCmdNext
 									.replaceAll(
 											"^.*?\\w+(\\W+\\d*\\W+\\d*\\W+\\d*)$",
 											"$1");
-							System.out.println(eventCmdNext);
+							// System.out.println(eventCmdNext);
 							// System.out.println(adb_cmd);
 							sb.append(adb_cmd);
 							sb.append(System.lineSeparator());
@@ -115,8 +152,8 @@ public class Utils {
 				}
 				line = br.readLine();
 			}
-			sb.append(ADB.mySendEventAdbLocation + " " + deviceNext.trim()
-					+ " " + eventCmdNext);
+			sb.append("/data/local/tmp/mysendevent " + deviceNext.trim() + " "
+					+ eventCmdNext);
 		} catch (IOException e) {
 			System.out.println("exception happened - here's what I know: ");
 			e.printStackTrace();

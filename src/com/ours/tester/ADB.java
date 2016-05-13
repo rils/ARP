@@ -1,3 +1,8 @@
+/**
+ * this deals with adb connection,command,output etc
+ * @author Mohammed Rilwan April 2016
+ * 
+ */
 package com.ours.tester;
 
 import java.io.File;
@@ -310,15 +315,17 @@ public class ADB {
 		shell("chmod 777 " + mySendEventAdbLocation);
 	}
 
-	public void convertPushPlayEventScript(String mel_file_location) {
+	public void convertPushPlayEventScript(String mel_file_location,
+			boolean play_only) {
 		String mes_script_file;
 		System.out.println("convertpushPlay" + mel_file_location);
 
 		try {
-
-			mes_script_file = new Utils()
-					.convertgetEventToSendEvent(mel_file_location);
-			adbPush(mes_script_file, myTesterEventScript_file);
+			if (!play_only) {
+				mes_script_file = new Utils()
+						.convertgetEventToSendEvent(mel_file_location);
+				adbPush(mes_script_file, myTesterEventScript_file);
+			}
 			runSendEventScript(myTesterEventScript_file);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

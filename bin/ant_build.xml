@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project tester with Jar-in-Jar Loader">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <target name="create_run_jar">
+        <jar destfile="C:/Users/rilwan/workspace/tester/bin/com/ours/tester/arp.jar">
+            <manifest>
+                <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
+                <attribute name="Rsrc-Main-Class" value="com.ours.tester.MainWindow"/>
+                <attribute name="Class-Path" value="."/>
+                <attribute name="Rsrc-Class-Path" value="./ org-eclipse-jface-3.6.2.jar annotations.jar guava-17.0.jar common.jar kxml2-2.3.0.jar annotations-12.0.jar layoutlib-api.jar dvlib.jar gson-2.2.4.jar commons-compress-1.8.1.jar httpclient-4.1.1.jar httpmime-4.1.jar httpcore-4.1.jar commons-logging-1.1.1.jar commons-codec-1.4.jar sdklib.jar ddmlib.jar jfreechart-1.0.9.jar jfreechart-swt-1.0.9.jar org-eclipse-core-commands-3.6.0.jar org-eclipse-equinox-common-3.6.0.jar osgi-4.0.0.jar jcommon-1.0.12.jar ddmuilib.jar hierarchyviewer2lib.jar chimpchat.jar"/>
+            </manifest>
+            <zipfileset src="jar-in-jar-loader.zip"/>
+            <fileset dir="C:/Users/rilwan/workspace/tester/bin"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="org-eclipse-jface-3.6.2.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="annotations.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="guava-17.0.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="common.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="kxml2-2.3.0.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="annotations-12.0.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="layoutlib-api.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="dvlib.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="gson-2.2.4.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="commons-compress-1.8.1.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="httpclient-4.1.1.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="httpmime-4.1.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="httpcore-4.1.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="commons-logging-1.1.1.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="commons-codec-1.4.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="sdklib.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="ddmlib.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="jfreechart-1.0.9.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="jfreechart-swt-1.0.9.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="org-eclipse-core-commands-3.6.0.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="org-eclipse-equinox-common-3.6.0.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="osgi-4.0.0.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="jcommon-1.0.12.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="ddmuilib.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="hierarchyviewer2lib.jar"/>
+            <zipfileset dir="C:\adt-bundle-windows\sdk\tools\lib" includes="chimpchat.jar"/>
+        </jar>
+    </target>
+</project>

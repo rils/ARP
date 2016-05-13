@@ -1,3 +1,12 @@
+/**
+ * Android Record N Play.
+ * This records the input events from gpio(hard key) and touchscreen,touchkey(back,menu buttom)
+ * saves as mel(mytester event log) file and convert to mes(mytesteter event script).
+ * playback mes script by a modified sendevent binary.
+ * More Info at -https://github.com/rils/ARP/wiki
+ * @author Mohammed Rilwan April 2016
+ * 
+ */
 package com.ours.tester;
 
 import java.awt.EventQueue;
@@ -10,7 +19,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -19,7 +27,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
-import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -40,10 +47,6 @@ import com.android.ddmlib.IDevice;
 
 public class MainWindow extends JFrame implements ActionListener {
 
-	/**
-	 * @author Mohammed Rilwan April 2016
-	 * 
-	 */
 	private static final long serialVersionUID = -770355362650071463L;
 	public static ADB mADB = new ADB();
 	private Utils mUtils;
@@ -55,6 +58,7 @@ public class MainWindow extends JFrame implements ActionListener {
 	private static boolean isRecording = false;
 	private static boolean isPause = false;
 	private static boolean isResumed = false;
+	private static boolean canIPlay = true;
 
 	private static Thread RecordThread;
 	private static Thread PlayThread;
@@ -82,7 +86,7 @@ public class MainWindow extends JFrame implements ActionListener {
 
 		super("Android Record and Play");
 		setIconImage(Toolkit.getDefaultToolkit().getImage(
-				MainWindow.class.getResource("/images/play.png")));
+				MainWindow.class.getResource("icon.png")));
 
 		mUtils = new Utils();
 
@@ -137,6 +141,7 @@ public class MainWindow extends JFrame implements ActionListener {
 
 		GridBagConstraints gbc_btnRecord = new GridBagConstraints();
 		gbc_btnRecord.fill = GridBagConstraints.HORIZONTAL;
+		btnRecord.setToolTipText("Start Record Input Actions");
 		btnRecord.setFont(new Font("Sans", Font.ROMAN_BASELINE, 14));
 		gbc_btnRecord.insets = new Insets(0, 0, 5, 0);
 		gbc_btnRecord.gridx = 9;
@@ -154,6 +159,7 @@ public class MainWindow extends JFrame implements ActionListener {
 
 		btnStop.setFont(new Font("Sans", Font.ROMAN_BASELINE, 14));
 		btnStop.setEnabled(false);
+		btnStop.setToolTipText("Stop Recording");
 		GridBagConstraints gbc_btnStop = new GridBagConstraints();
 		gbc_btnStop.fill = GridBagConstraints.HORIZONTAL;
 		gbc_btnStop.insets = new Insets(0, 0, 5, 0);
@@ -165,6 +171,7 @@ public class MainWindow extends JFrame implements ActionListener {
 		gbc_btnSave.fill = GridBagConstraints.HORIZONTAL;
 		btnSave.setFont(new Font("Sans", Font.ROMAN_BASELINE, 14));
 		btnSave.setEnabled(false);
+		btnSave.setToolTipText("Save Last Recorded File");
 		gbc_btnSave.insets = new Insets(0, 0, 5, 0);
 		gbc_btnSave.gridx = 9;
 		gbc_btnSave.gridy = 2;
@@ -173,6 +180,7 @@ public class MainWindow extends JFrame implements ActionListener {
 		GridBagConstraints gbc_btnOpen = new GridBagConstraints();
 		gbc_btnOpen.fill = GridBagConstraints.HORIZONTAL;
 		btnOpen.setFont(new Font("Sans", Font.ROMAN_BASELINE, 14));
+		btnOpen.setToolTipText("Open a .mel to play");
 		gbc_btnOpen.insets = new Insets(0, 0, 5, 0);
 		gbc_btnOpen.gridx = 9;
 		gbc_btnOpen.gridy = 3;
@@ -217,6 +225,7 @@ public class MainWindow extends JFrame implements ActionListener {
 		GridBagConstraints gbc_btnPlay = new GridBagConstraints();
 		gbc_btnPlay.fill = GridBagConstraints.HORIZONTAL;
 		btnPlay.setFont(new Font("Sans", Font.ROMAN_BASELINE, 14));
+		btnPlay.setToolTipText("Play Current File");
 		gbc_btnPlay.gridx = 9;
 		gbc_btnPlay.gridy = 4;
 		getContentPane().add(btnPlay, gbc_btnPlay);
@@ -244,26 +253,6 @@ public class MainWindow extends JFrame implements ActionListener {
 
 	}
 
-	private void initializeMenu() {
-		mPopupMenu = new JPopupMenu();
-
-		initializeAbout();
-
-		/*
-		 * Add later
-		 */
-		mPopupMenu.addPopupMenuListener(new PopupMenuListener() {
-			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-			}
-
-			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-			}
-
-			public void popupMenuCanceled(PopupMenuEvent e) {
-			}
-		});
-	}
-
 	private void showDialogMessage(String message, String type, boolean exit) {
 
 		int errorType = JOptionPane.ERROR_MESSAGE;
@@ -281,6 +270,25 @@ public class MainWindow extends JFrame implements ActionListener {
 			System.exit(0);
 	}
 
+	private void initializeMenu() {
+		mPopupMenu = new JPopupMenu();
+
+		initializeAbout();
+		/*
+		 * Add later
+		 */
+		mPopupMenu.addPopupMenuListener(new PopupMenuListener() {
+			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+			}
+
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+			}
+
+			public void popupMenuCanceled(PopupMenuEvent e) {
+			}
+		});
+	}
+
 	private void initializeAbout() {
 		JMenuItem menuItemAbout = new JMenuItem("About ARP");
 		menuItemAbout.addActionListener(new ActionListener() {
@@ -293,7 +301,7 @@ public class MainWindow extends JFrame implements ActionListener {
 	}
 
 	private void about() {
-		AboutDialog dialog = new AboutDialog(this, true);
+		About dialog = new About(this, true);
 		dialog.setLocationRelativeTo(this);
 		dialog.setVisible(true);
 	}
@@ -309,9 +317,12 @@ public class MainWindow extends JFrame implements ActionListener {
 					pauseRecording();
 				else
 					record();
-			} else if (button == btnStop)
-				stop();
-			else if (button == btnOpen)
+			} else if (button == btnStop) {
+				if (isPlaying)
+					canIPlay = false;
+				else
+					stop();
+			} else if (button == btnOpen)
 				openFile();
 			else if (button == btnSave)
 				saveFile();
@@ -326,7 +337,6 @@ public class MainWindow extends JFrame implements ActionListener {
 			else
 				mADB.mDevice = mADB.mDevices[cb.getSelectedIndex()];
 		}
-
 	}
 
 	private void record() {
@@ -337,7 +347,6 @@ public class MainWindow extends JFrame implements ActionListener {
 		RecordThread = new Thread(new Runnable() {
 
 			public void run() {
-
 				btnRecord.setText("Pause");
 				btnStop.setEnabled(true);
 				btnOpen.setEnabled(false);
@@ -351,7 +360,7 @@ public class MainWindow extends JFrame implements ActionListener {
 	}
 
 	/**
-	 * This happens at stop.
+	 * This happens at stop a record.
 	 */
 	private void stop() {
 
@@ -374,7 +383,7 @@ public class MainWindow extends JFrame implements ActionListener {
 	}
 
 	/**
-	 * at pause.
+	 * at pause a record.
 	 */
 	private void pauseRecording() {
 
@@ -426,9 +435,18 @@ public class MainWindow extends JFrame implements ActionListener {
 				lbl_action.setText("Now Running:");
 				text_Curfile.setText(eventFileToPlay);
 				int count = (Integer) spinner.getValue();
+				spinner.setToolTipText("Play count: " + spinner.getValue());
+				boolean playOnly = false;
 				for (int i = 1; i <= count; i++) {
 					lbl_action.setText("Now Running: x " + i);
-					mADB.convertPushPlayEventScript(eventFileToPlay);
+					mADB.convertPushPlayEventScript(eventFileToPlay, playOnly);
+					playOnly = true;
+					if (!canIPlay) {
+						System.out.println("Stop button: break Play thread");
+						canIPlay = true;
+						break;
+					}
+
 				}
 				System.out.println("End Play thread");
 				resetControls();
