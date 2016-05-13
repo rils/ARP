@@ -1,6 +1,6 @@
 /**
  * The about dialog
- * @author Mohammed Rilwan April 2016
+ * @author Mohammed Rilwan April 2016.
  * 
  */
 package com.ours.tester;

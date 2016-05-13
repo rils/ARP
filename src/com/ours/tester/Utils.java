@@ -1,5 +1,10 @@
 package com.ours.tester;
 
+/**
+ * The util methods
+ * @author Mohammed Rilwan April 2016.
+ * 
+ */
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;

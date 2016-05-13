@@ -4,7 +4,7 @@
  * saves as mel(mytester event log) file and convert to mes(mytesteter event script).
  * playback mes script by a modified sendevent binary.
  * More Info at -https://github.com/rils/ARP/wiki
- * @author Mohammed Rilwan April 2016
+ * @author Mohammed Rilwan April 2016.
  * 
  */
 package com.ours.tester;
