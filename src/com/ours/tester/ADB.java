@@ -65,7 +65,6 @@ public class ADB {
 		}
 
 		if (success) {
-
 			int count = 0;
 			while (!mAndroidDebugBridge.hasInitialDeviceList()) {
 				try {
@@ -195,7 +194,6 @@ public class ADB {
 						+ file_location);
 				e.printStackTrace();
 			}
-
 		}
 
 		@Override
@@ -331,7 +329,6 @@ public class ADB {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
 
 	public void adbPush(String src, String dst) {

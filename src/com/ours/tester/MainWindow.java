@@ -100,12 +100,7 @@ public class MainWindow extends JFrame implements ActionListener {
 					"error", true);
 			System.exit(0);
 		}
-		devices = mADB.adbDevices();
-		if (devices == null) {
-			showDialogMessage(
-					"No Devices Conencted, Please Run again by conencting atleast once android device.",
-					"error", true);
-		}
+		devices = selectDevcies(false);
 		// copy mysendevent to /data/local/tmp/
 		try {
 			mADB.initmySendEvent();
@@ -250,60 +245,6 @@ public class MainWindow extends JFrame implements ActionListener {
 		setResizable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
-
-	}
-
-	private void showDialogMessage(String message, String type, boolean exit) {
-
-		int errorType = JOptionPane.ERROR_MESSAGE;
-		String title = "Error";
-		/*
-		 * Add more here later if required
-		 */
-		if (type.contentEquals("error")) {
-			errorType = JOptionPane.ERROR_MESSAGE;
-			title = "Error";
-		}
-
-		JOptionPane.showMessageDialog(this, message, title, errorType);
-		if (exit)
-			System.exit(0);
-	}
-
-	private void initializeMenu() {
-		mPopupMenu = new JPopupMenu();
-
-		initializeAbout();
-		/*
-		 * Add later
-		 */
-		mPopupMenu.addPopupMenuListener(new PopupMenuListener() {
-			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-			}
-
-			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-			}
-
-			public void popupMenuCanceled(PopupMenuEvent e) {
-			}
-		});
-	}
-
-	private void initializeAbout() {
-		JMenuItem menuItemAbout = new JMenuItem("About ARP");
-		menuItemAbout.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				about();
-			}
-
-		});
-		mPopupMenu.add(menuItemAbout);
-	}
-
-	private void about() {
-		About dialog = new About(this, true);
-		dialog.setLocationRelativeTo(this);
-		dialog.setVisible(true);
 	}
 
 	public void actionPerformed(ActionEvent event) {
@@ -329,6 +270,7 @@ public class MainWindow extends JFrame implements ActionListener {
 			else if (button == btnPlay)
 				play();
 		}
+
 		if (source instanceof JComboBox) {
 			JComboBox cb = (JComboBox) event.getSource();
 
@@ -337,6 +279,79 @@ public class MainWindow extends JFrame implements ActionListener {
 			else
 				mADB.mDevice = mADB.mDevices[cb.getSelectedIndex()];
 		}
+	}
+
+	private String[] selectDevcies(boolean show_popup) {
+
+		devices = mADB.adbDevices();
+		if (devices == null) {
+			showDialogMessage(
+					"No Devices Connected, Please run again by connecting atleast one android device.",
+					"error", true);
+		}
+		if (show_popup)
+			comboBox.showPopup();
+		return devices;
+	}
+
+	private void showDialogMessage(String message, String type, boolean exit) {
+
+		int errorType = JOptionPane.ERROR_MESSAGE;
+		String title = "Error";
+		/*
+		 * Add more here later if required
+		 */
+		if (type.contentEquals("error")) {
+			errorType = JOptionPane.ERROR_MESSAGE;
+			title = "Error";
+		}
+
+		JOptionPane.showMessageDialog(this, message, title, errorType);
+		if (exit)
+			System.exit(0);
+	}
+
+	private void initializeMenu() {
+		mPopupMenu = new JPopupMenu();
+
+		addMenuItem("Refresh Devices");
+		addMenuItem("About ARP");
+
+		/*
+		 * Add later
+		 */
+		mPopupMenu.addPopupMenuListener(new PopupMenuListener() {
+			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+			}
+
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+			}
+
+			public void popupMenuCanceled(PopupMenuEvent e) {
+			}
+		});
+	}
+
+	private void addMenuItem(String menuItem_label) {
+
+		JMenuItem menuItem = new JMenuItem(menuItem_label);
+		menuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JMenuItem Item = (JMenuItem) e.getSource();
+				if (Item.getText().contains("About")) {
+					about();
+				} else if (Item.getText().contains("Refresh"))
+					selectDevcies(true);
+			}
+		});
+		mPopupMenu.add(menuItem);
+		mPopupMenu.addSeparator();
+	}
+
+	private void about() {
+		About dialog = new About(this, true);
+		dialog.setLocationRelativeTo(this);
+		dialog.setVisible(true);
 	}
 
 	private void record() {
@@ -446,7 +461,6 @@ public class MainWindow extends JFrame implements ActionListener {
 						canIPlay = true;
 						break;
 					}
-
 				}
 				System.out.println("End Play thread");
 				resetControls();
