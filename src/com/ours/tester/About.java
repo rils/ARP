@@ -34,10 +34,11 @@ public class About extends JDialog {
 		setTitle("About Android Record N Play");
 		setBounds(0, 0, 239, 118);
 		setResizable(false);
+		String version = "1.0.5";
 
-		JLabel labelApp = new JLabel("Android Record N Play Version 1.0.3");
+		JLabel labelApp = new JLabel("Android Record N Play Version " + version);
 
-		JTextField labelUrl = new JTextField("https://github.com/rils/ARP");
+		JTextField labelUrl = new JTextField("https://github.com/rils/ARP/wiki");
 		JTextField labelReport = new JTextField("bugs?:rilwan:enjoy!");
 		labelReport.setBorder(new EmptyBorder(0, 0, 0, 0));
 		labelReport.setEditable(false);

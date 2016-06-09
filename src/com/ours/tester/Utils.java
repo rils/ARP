@@ -19,7 +19,7 @@ public class Utils {
 
 	public static final float DELAY_LIMIT_TOBE_COUNTED = 0.1f;
 	public static final List<String> nameList = Arrays.asList("sec_touchkey",
-			"sec_touchscreen", "gpio", "qpnp_pon", "touch");
+			"sec_touchscreen", "gpio", "qpnp_pon", "touch","synaptics");
 
 	public static void FileWrite(String file_location, String data,
 			boolean appendable) {
