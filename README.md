@@ -65,5 +65,5 @@ Next is pretty straight forward.
 7. Please note: Run timestamp.mes recorded with same device on same model device. 
    if you want try in different device, push `/arp_file_location/mysendevent` file to `/data/local/`
 
-**bug?riwan03@gmail.com:enjoy; \\\\ Thanks :)**
+**bug?rilwan03@gmail.com:enjoy; \\\\ Thanks :)**
 
